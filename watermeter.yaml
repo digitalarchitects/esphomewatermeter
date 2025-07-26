@@ -1,0 +1,88 @@
+esphome:
+  name: esphome-web-f53118
+  friendly_name: "ESPHome Web water temp"
+  min_version: 2025.5.0
+  name_add_mac_suffix: false
+
+esp8266:
+  board: esp01_1m
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+# Allow Over-The-Air updates
+ota:
+- platform: esphome
+
+wifi:
+  ssid: "DA"
+  password: "aaabacadaeafaaabacadaeafaa"
+  #failback ap
+  ap:
+    ssid: "watermeter"
+    password: "kensentme"
+
+captive_portal:
+
+#display
+i2c:
+  sda: GPIO5
+  scl: GPIO4
+
+font:
+ -file: "ariel.ttf"
+ -id: my_font
+ -size: 20
+
+display:
+ - platform: ssd1306_i2c
+   model: "SSD1306 128x64"
+   reset_pin: GPIO0
+   address: 0x3C
+   id: my_display
+   pages: 
+    -id: page1
+      lambda: |-
+      it.printf(20,50, id(my_font), "Now:%1f", id(my_flow_meter).state);
+    -id: page2
+      lambda: |-
+      it.printf(20, 50, id(my_font), "DAY:%.1f", id(my_daily_meter).state);
+    -id: page3
+      lambda: |-
+      it.printf(20, 50, id(my_font), "MTD:%.1f", id(my_monthly_meter).state);
+    -id: page4
+      lambda: |-
+      it.printf(20, 50, id(my_font), "UP:%.1f", id(uptime_sensor).state);
+interval:
+  - interval: 3s
+    then:
+      - display.page.show_next: my_display
+      - component.update: my_display
+Sensor:
+#uptime sensor
+  - platform: uptime
+    name: Uptime Sensor
+    id: uptime_sensor
+#Meter 1
+  - platform: pulse_counter
+    pin: GPIO1
+    name: "Water One"
+    id: my_flow_meter
+    filters:
+      - multiply: 0.00227
+  - platform: integration
+    name: "Total Daily Water One"
+    id: my_daily_meter
+    sensor: my_flow_meter
+    time_unit: min
+    restore: true
+  - platform: integration
+    name: "Total Monthly Water One"
+    id: my_monthly_meter
+    sensor: my_flow_meter
+    time_unit: d
+    restore: true
+
