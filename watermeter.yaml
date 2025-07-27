@@ -61,12 +61,12 @@ interval:
     then:
       - display.page.show_next: my_display
       - component.update: my_display
-Sensor:
-#uptime sensor
+sensor:
+  #uptime sensor
   - platform: uptime
     name: Uptime Sensor
     id: uptime_sensor
-#Meter 1
+  #Meter 1
   - platform: pulse_counter
     pin: GPIO1
     name: "Water One"
